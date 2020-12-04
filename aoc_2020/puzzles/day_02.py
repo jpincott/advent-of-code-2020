@@ -3,10 +3,7 @@ from functools import reduce
 
 from parse import parse
 
-
-def stream_lines(day):
-    with open(f"../input/day_{day}.txt") as f:
-        yield from f.readlines()
+from aoc_2020.utils.io import stream_lines
 
 
 def main():
