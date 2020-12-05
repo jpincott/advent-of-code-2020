@@ -14,19 +14,19 @@ def has_required_fields(passport):
 def is_valid(passport):
     if not has_required_fields(passport):
         return False
-    if not int(passport['byr']) in range(1920, 2002 + 1):
+    if int(passport['byr']) not in range(1920, 2002 + 1):
         return False
-    if not int(passport['iyr']) in range(2010, 2020 + 1):
+    if int(passport['iyr']) not in range(2010, 2020 + 1):
         return False
-    if not int(passport['eyr']) in range(2020, 2030 + 1):
+    if int(passport['eyr']) not in range(2020, 2030 + 1):
         return False
     if not (m := fullmatch(r'(\d+)(cm|in)', passport['hgt'])):
         return False
     else:
         n, u = m.groups()
-        if u == 'cm' and not int(n) in range(150, 193 + 1):
+        if u == 'cm' and int(n) not in range(150, 193 + 1):
             return False
-        if u == 'in' and not int(n) in range(59, 76 + 1):
+        if u == 'in' and int(n) not in range(59, 76 + 1):
             return False
     if not fullmatch('#[0-9a-f]{6}', passport['hcl']):
         return False
