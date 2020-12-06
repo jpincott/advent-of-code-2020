@@ -3,9 +3,7 @@ from aoc_2020.utils.io import stream_lines
 
 def calc_id(line):
     binstr = line.translate(str.maketrans('FBRL', '0110'))
-    row = int(binstr[:7], 2)
-    col = int(binstr[7:], 2)
-    return 8 * row + col
+    return int(binstr, 2)
 
 
 def find_missing(passes):
