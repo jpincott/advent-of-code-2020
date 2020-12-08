@@ -3,7 +3,7 @@ from functools import reduce
 
 def get_groups():
     with open('../input/day_6.txt') as f:
-        return [[{c for c in l} for l in g.splitlines()] for g in f.read().split('\n\n')]
+        return [[{char for char in line} for line in group.splitlines()] for group in f.read().split('\n\n')]
 
 
 def reducer(groups, fn):
