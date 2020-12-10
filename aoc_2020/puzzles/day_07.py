@@ -6,7 +6,7 @@ from aoc_2020.utils.io import stream_lines
 def get_rules():
     return {
         outer: {inner: int(count) for count, inner in findall(r'(\d+) (\w+ \w+)', contents)}
-        for outer, contents in [line.split(' bags contain ') for line in stream_lines(day=7)]
+        for outer, contents in (line.split(' bags contain ') for line in stream_lines(day=7))
     }
 
 
