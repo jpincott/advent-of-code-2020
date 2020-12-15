@@ -15,7 +15,7 @@ def main():
 def solve_it(limit):
     nums, last, turns = get_nums()
     for turn in range(turns, limit):
-        nums[last], last = turn, 0 if nums.get(last, 0) == 0 else turn - nums[last]
+        nums[last], last = turn, turn - nums.get(last, turn)
     return last
 
 
