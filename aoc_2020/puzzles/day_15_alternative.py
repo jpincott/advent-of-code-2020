@@ -16,10 +16,10 @@ def main():
 @timer
 def solve_it(limit):
     nums, last, turns = get_nums()
-    for turn in range(turns + 1, limit + 1):
+    for turn in range(turns, limit):
         hist = nums[last]
-        nums[last].append(turn - 1)
-        last = 0 if len(hist) == 1 else turn - 1 - nums[last][-2]
+        nums[last].append(turn)
+        last = 0 if len(hist) == 1 else turn - nums[last][-2]
     return last
 
 
