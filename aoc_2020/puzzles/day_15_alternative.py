@@ -5,7 +5,7 @@ from aoc_2020.utils.decorators import timer
 
 def get_nums():
     nums = [int(i) for i in '18,11,9,0,5,1'.split(',')]
-    return defaultdict(lambda: [], {n: [i + 1] for i, n in enumerate(nums)}), nums[-1], len(nums)
+    return defaultdict(lambda: 0, {n: i + 1 for i, n in enumerate(nums)}), nums[-1], len(nums)
 
 
 def main():
@@ -18,8 +18,8 @@ def solve_it(limit):
     nums, last, turns = get_nums()
     for turn in range(turns, limit):
         hist = nums[last]
-        nums[last].append(turn)
-        last = 0 if len(hist) == 1 else turn - nums[last][-2]
+        nums[last] = turn
+        last = 0 if hist == 0 else turn - hist
     return last
 
 
