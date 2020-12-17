@@ -12,7 +12,7 @@ def main():
 
     # pt 1
     invalid_tickets = find_invalid_tickets(rules, nearby)
-    print(sum(nearby[i][j] for i, l in invalid_tickets for j in l))
+    print(sum(nearby[i][j] for i, l in invalid_tickets.items() for j in l))
 
     # pt 2
     nearby = remove_invalid_tickets(invalid_tickets, nearby)
@@ -35,15 +35,15 @@ def get_input():
 
 
 def find_invalid_tickets(rules, nearby):
-    return [
-        (i, l)
+    return {
+        i: l
         for i, n in enumerate(nearby)
         if (l := [j for j, m in enumerate(n) if all(m not in r for ranges in rules.values() for r in ranges)])
-    ]
+    }
 
 
 def remove_invalid_tickets(invalid_tickets, nearby):
-    return [n for i, n in enumerate(nearby) if i not in [j for j, _ in invalid_tickets]]
+    return [n for i, n in enumerate(nearby) if i not in invalid_tickets]
 
 
 def get_field_candidates(nearby, rules):
