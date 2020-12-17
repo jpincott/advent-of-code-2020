@@ -1,21 +1,17 @@
 from functools import cache
+from itertools import product
 
+from aoc_2020.utils.decorators import timer
 from aoc_2020.utils.io import stream_lines
 
 
-def get_input():
-    return {(x, y, 0) for y, r in enumerate(stream_lines(day=17)) for x, c in enumerate(r) if c == '#'}
+def get_input(d):
+    return {(x, y) + (0,) * (d - 2) for y, r in enumerate(stream_lines(day=17)) for x, c in enumerate(r) if c == '#'}
 
 
 @cache
 def neighbours(c):
-    deltas = {
-        tuple(map(sum, zip(c, (dx - 1, dy - 1, dz - 1))))
-        for dx in range(3)
-        for dy in range(3)
-        for dz in range(3)
-    }
-    return deltas
+    return {tuple(map(sum, zip(c, d))) for d in product((-1, 0, 1), repeat=len(c))}
 
 
 def evolve(cells):
@@ -24,7 +20,7 @@ def evolve(cells):
 
     # check all active cells
     for c in cells:
-        # find all 27 neighbours (includes self)
+        # find all 3**n neighbours (includes self)
         n = neighbours(c)
 
         # add empty neighbours to boundary
@@ -39,7 +35,7 @@ def evolve(cells):
 
     # check empty cells
     for c in boundary - cells:
-        # find all 27 neighbours (includes self)
+        # find all 3**n neighbours (includes self)
         n = neighbours(c)
 
         # count active neighbours
@@ -53,12 +49,18 @@ def evolve(cells):
     return next_gen
 
 
+@timer
 def main():
-    cells = get_input()
-
+    # pt 1
+    cells = get_input(3)
     for t in range(6):
         cells = evolve(cells)
+    print(len(cells))
 
+    # pt 2
+    cells = get_input(4)
+    for t in range(6):
+        cells = evolve(cells)
     print(len(cells))
 
 
