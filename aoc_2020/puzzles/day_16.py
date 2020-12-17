@@ -1,79 +1,64 @@
 from math import prod
 from re import findall
 
-from parse import parse
+from parse import findall
 
 from aoc_2020.utils.decorators import timer
 
 
 @timer
+def main():
+    rules, ticket, nearby = get_input()
+
+    # pt 1
+    invalid_tickets = find_invalid_tickets(rules, nearby)
+    print(sum(nearby[i][j] for i, l in invalid_tickets for j in l))
+
+    # pt 2
+    nearby = remove_invalid_tickets(invalid_tickets, nearby)
+    fields = get_field_candidates(nearby, rules)
+    fields = consolidate(fields, dict(), set())
+    print(prod(ticket[i] for i, f in fields.items() if f.startswith('departure')))
+
+
 def get_input():
     with open('../input/day_16.txt') as f:
-        rules, ticket, neigbbours = f.read().split('\n\n')
-        return rules, ticket, neigbbours
+        rules, ticket, nearby = f.read().split('\n\n')
+        rules = {
+            name: [range(x1, y1 + 1), range(x2, y2 + 1)]
+            for r in rules.split('\n')
+            for name, x1, y1, x2, y2 in findall('{}: {:d}-{:d} or {:d}-{:d}', r)
+        }
+        ticket = [int(n) for n in ticket.split('\n')[1].split(',')]
+        nearby = [[int(n) for n in l.split(',')] for l in nearby.split('\n')[1:]]
+        return rules, ticket, nearby
 
 
-@timer
-def main():
-    rules, ticket, neighbours = get_input()
-    pt1(neighbours, rules)
+def find_invalid_tickets(rules, nearby):
+    return [
+        (i, l)
+        for i, n in enumerate(nearby)
+        if (l := [j for j, m in enumerate(n) if all(m not in r for ranges in rules.values() for r in ranges)])
+    ]
 
-    rules = {
-        name: [range(x1, y1 + 1), range(x2, y2 + 1)]
-        for r in rules.split('\n')
-        for name, x1, y1, x2, y2 in [(parse('{}: {:d}-{:d} or {:d}-{:d}', r).fixed)]
+
+def remove_invalid_tickets(invalid_tickets, nearby):
+    return [n for i, n in enumerate(nearby) if i not in [j for j, _ in invalid_tickets]]
+
+
+def get_field_candidates(nearby, rules):
+    return {
+        f: {r for r in rules if all(any(n in r for r in rules[r]) for n in [n[f] for n in nearby])}
+        for f in range(len(rules))
     }
 
-    neighbours = [
-        [int(n) for n in l.split(',')]
-        for l in neighbours.split('\n')[1:]
-    ]
 
-    # only valid neighbours
-    neighbours = [
-        n
-        for n in neighbours
-        if all([
-            any([
-                i in r for ranges in rules.values() for r in ranges
-            ])
-            for i in n
-        ])
-    ]
-
-    # valid rules by position
-    valid_rules = {}
-    for f in range(len(rules)):
-        is_possible = set()
-        vals_to_test = [n[f] for n in neighbours]
-        for rule, ranges in rules.items():
-            rule_is_valid = True
-            for val in vals_to_test:
-                if all(val not in r for r in ranges):
-                    rule_is_valid = False
-            if rule_is_valid:
-                is_possible.add(rule)
-        valid_rules[f] = is_possible
-
-    fixed = {}
-    while valid_rules:
-        to_remove = [(p, list(r)[0]) for p, r in valid_rules.items() if len(r) == 1]
-        for p, r in to_remove:
-            fixed[p] = r
-            del valid_rules[p]
-            for s in valid_rules.values():
-                s.remove(r)
-
-    fields = [i for i, r in fixed.items() if r.startswith('departure')]
-    ticket = [int(n) for n in ticket.split('\n')[1].split(',')]
-
-    print(prod(ticket[i] for i in fields))
-
-
-def pt1(neighbours, rules):
-    rules = [range(int(x), int(y) + 1) for x, y in findall(r'(\d+)-(\d+)', rules)]
-    neighbours = [int(n) for n in findall(r'(\d+)', neighbours)]
-    print(sum(n for n in neighbours if all(n not in r for r in rules)))
+def consolidate(todo, done, used):
+    return done if not todo else consolidate(
+        {k: v for k, v in todo.items() if k != (f := min(todo, key=lambda k: len(todo[k] - used)))},
+        done | {f: next(v for v in todo[f] - used)},
+        used | todo[f]
+    )
 
 
 if __name__ == '__main__':
