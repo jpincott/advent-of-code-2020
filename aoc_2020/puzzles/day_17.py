@@ -1,0 +1,66 @@
+from functools import cache
+
+from aoc_2020.utils.io import stream_lines
+
+
+def get_input():
+    return {(x, y, 0) for y, r in enumerate(stream_lines(day=17)) for x, c in enumerate(r) if c == '#'}
+
+
+@cache
+def neighbours(c):
+    deltas = {
+        tuple(map(sum, zip(c, (dx - 1, dy - 1, dz - 1))))
+        for dx in range(3)
+        for dy in range(3)
+        for dz in range(3)
+    }
+    return deltas
+
+
+def evolve(cells):
+    next_gen = set()  # results'
+    boundary = set()  # all cells to consider for next gen
+
+    # check all active cells
+    for c in cells:
+        # find all 27 neighbours (includes self)
+        n = neighbours(c)
+
+        # add empty neighbours to boundary
+        boundary |= (n - cells)
+
+        # count active neighbours
+        s = len(n & cells) - 1
+
+        # propagate to next gen if 2 or 3 neighbours
+        if s in (2, 3):
+            next_gen.add(c)
+
+    # check empty cells
+    for c in boundary - cells:
+        # find all 27 neighbours (includes self)
+        n = neighbours(c)
+
+        # count active neighbours
+        s = len(n & cells)
+
+        # propagate to next gen if 3 neighbours
+        if s == 3:
+            next_gen.add(c)
+
+    # we're done
+    return next_gen
+
+
+def main():
+    cells = get_input()
+
+    for t in range(6):
+        cells = evolve(cells)
+
+    print(len(cells))
+
+
+if __name__ == '__main__':
+    main()
