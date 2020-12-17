@@ -17,7 +17,7 @@ def main():
     # pt 2
     nearby = remove_invalid_tickets(invalid_tickets, nearby)
     fields = get_field_candidates(nearby, rules)
-    fields = consolidate(fields, dict(), set())
+    fields = consolidate(fields, {})
     print(prod(ticket[i] for i, f in fields.items() if f.startswith('departure')))
 
 
@@ -53,11 +53,10 @@ def get_field_candidates(nearby, rules):
     }
 
 
-def consolidate(todo, done, used):
+def consolidate(todo, done):
     return done if not todo else consolidate(
-        {k: v for k, v in todo.items() if k != (f := min(todo, key=lambda k: len(todo[k] - used)))},
-        done | {f: next(v for v in todo[f] - used)},
-        used | todo[f]
+        {k: v - todo[f] for k, v in todo.items() if k != (f := min(todo, key=lambda k: len(todo[k])))},
+        done | {f: todo[f].pop()}
     )
 
 
