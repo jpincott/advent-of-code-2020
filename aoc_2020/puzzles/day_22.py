@@ -1,4 +1,5 @@
 from collections import deque
+from itertools import islice
 from math import prod
 
 from aoc_2020.utils.decorators import timer
@@ -12,44 +13,8 @@ def get_decks():
 @timer
 def main():
     p1, p2 = get_decks()
-
-    # Pt 1
-    r1, r2 = play_combat(p1, p2)
-    print(f"P1: {score(r1)}, P2: {score(r2)}")
-
-    # p2
-    r1, r2, _ = play_recursive_combat(p1, p2)
-    print(f"P1: {score(r1)}, P2: {score(r2)}")
-
-
-def play_recursive_combat(p1, p2):
-    p1, p2 = deque(p1), deque(p2)
-    seen = set()
-    while p1 and p2:
-        key = (tuple(p1), tuple(p2))
-        if key in seen:
-            return p1, p2, True
-        else:
-            seen.add(key)
-
-        c1, c2 = p1.popleft(), p2.popleft()
-        if len(p1) < c1 or len(p2) < c2:
-            if c1 > c2:
-                p1.append(c1)
-                p1.append(c2)
-            else:
-                p2.append(c2)
-                p2.append(c1)
-        else:
-            r1, r2, p1_win = play_recursive_combat(list(p1)[:c1], list(p2)[:c2])
-            if p1_win or r1:
-                p1.append(c1)
-                p1.append(c2)
-            else:
-                p2.append(c2)
-                p2.append(c1)
-
-    return p1, p2, False
+    print(f"Winning score: {abs(play_combat(p1, p2))}")
+    print(f"Winning score: {abs(play_recursive_combat(p1, p2))}")
 
 
 def score(cards):
@@ -60,13 +25,27 @@ def play_combat(p1, p2):
     p1, p2 = deque(p1), deque(p2)
     while p1 and p2:
         c1, c2 = p1.popleft(), p2.popleft()
-        if c1 > c2:
-            p1.append(c1)
-            p1.append(c2)
+        p1.extend((c1, c2)) if c1 > c2 else p2.extend((c2, c1))
+    return score(p1) - score(p2)
+
+
+def play_recursive_combat(p1, p2):
+    p1, p2 = deque(p1), deque(p2)
+    seen = set()
+    while p1 and p2:
+        if (key := (tuple(p1), tuple(p2))) in seen:
+            return 0
         else:
-            p2.append(c2)
-            p2.append(c1)
-    return p1, p2
+            seen.add(key)
+
+        c1, c2 = p1.popleft(), p2.popleft()
+        if len(p1) < c1 or len(p2) < c2:
+            p1.extend((c1, c2)) if c1 > c2 else p2.extend((c2, c1))
+        else:
+            s = play_recursive_combat(islice(p1, 0, c1), islice(p2, 0, c2))
+            p1.extend((c1, c2)) if s >= 0 else p2.extend((c2, c1))
+
+    return score(p1) - score(p2)
 
 
 if __name__ == '__main__':
