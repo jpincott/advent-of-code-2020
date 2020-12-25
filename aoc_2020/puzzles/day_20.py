@@ -11,8 +11,9 @@ class Tile:
     def __init__(self, key, cells):
         self.key = key
         self.cells = cells
-        self.n = len(cells)
-        assert all(len(r) == self.n for r in cells)
+        self.h = len(cells)
+        self.w = len(cells[0])
+        assert all(self.w == len(r) for r in cells)
 
     def __repr__(self):
         return str(self.key)
@@ -38,13 +39,14 @@ class Tile:
         return "".join([c[-1] for c in self.cells])
 
     def rotate(self):
-        new = [[None] * self.n for _ in range(self.n)]
-        for r in range(self.n):
-            for c in range(self.n):
-                new[self.n - c - 1][r] = self.cells[r][c]
-        for r in range(self.n):
+        new = [[None] * self.h for _ in range(self.w)]
+        for r in range(self.h):
+            for c in range(self.w):
+                new[self.w - c - 1][r] = self.cells[r][c]
+        for r in range(self.w):
             new[r] = ''.join(new[r])
         self.cells = new
+        self.h, self.w = self.w, self.h
         return self
 
     def vflip(self):
@@ -138,9 +140,8 @@ def main():
 
     # assemble picture
     cells = []
-    m = t.n
     for r in range(n):
-        for rr in range(1, m-1):
+        for rr in range(1, t.h - 1):
             row = []
             for c in range(n):
                 row.extend(grid[r][c].cells[rr][1:-1])
@@ -149,8 +150,33 @@ def main():
     grid = Tile('grid', cells)
 
     # find monsters
+    monster = Tile('monster', [
+        '                  # ',
+        '#    ##    ##    ###',
+        ' #  #  #  #  #  #   '
+    ])
+
     # rotate and flip
-    pass
+    m = 0
+    for f in range(2):
+        for r in range(4):
+            m += count_monsters(grid, monster)
+            grid.rotate()
+        grid.vflip()
+
+    roughness = sum(c == '#' for r in grid.cells for c in r) - m * sum(c == '#' for r in monster.cells for c in r)
+    print(roughness)
+
+
+def count_monsters(grid, monster):
+    return sum(
+        all(grid.cells[rg + rm][cg + cm] == '#'
+            for rm in range(monster.h)
+            for cm in range(monster.w)
+            if monster.cells[rm][cm] == '#')
+        for rg in range(grid.h - monster.h)
+        for cg in range(grid.w - monster.w)
+    )
 
 
 if __name__ == '__main__':
